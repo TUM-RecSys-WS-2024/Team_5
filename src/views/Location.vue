@@ -221,9 +221,9 @@ export default {
 
 .text {
   position: absolute;
-  width: 608px;
-  top: 189px;
-  left: 555px;
+  width: 708px;
+  top: 140px;
+  left: 520px;
   font-family: "Inter-Medium", Helvetica;
   font-weight: 500;
   color: #7fa1c4;

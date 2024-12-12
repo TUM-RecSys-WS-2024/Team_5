@@ -18,7 +18,7 @@
     <!-- profile button -->
     <button 
       v-if="isLoggedIn" 
-      @click="showProfileModal = true;" 
+      @click="this.showProfileModal = true" 
       class="login-btn"
       ref="profileButton"
     >
@@ -36,7 +36,7 @@
     <!-- ProfileModal -->
     <ProfileModal 
       v-if="showProfileModal" 
-      @close="showProfileModal = false"
+      @close="this.showProfileModal = false"
       @logout="handleLogout"
       :username="username" 
       :password="password"
@@ -54,6 +54,7 @@
 </template>
   
 <script>
+import { mapState, mapActions } from 'vuex';
 import LoginModal from './LoginModal.vue';
 import ProfileModal from './ProfileModal.vue';
 import RegisterModal from './RegisterModal.vue';
@@ -67,7 +68,6 @@ export default {
 
   data() {
     return {
-      isLoggedIn: false, 
       showLoginModal: false, 
       showProfileModal: false, 
       showRegisterModal: false, 
@@ -75,28 +75,26 @@ export default {
       password: '', 
     };
   },
+  computed: {
+    ...mapState(['isLoggedIn', 'username', 'password']),
+  },
 
   methods: {
+    ...mapActions(['login', 'logout']),
     handleLoginSuccess(userData) {
-      this.isLoggedIn = true;
       this.showLoginModal = false; 
       console.log('Login successful!'); 
-      this.username = userData.username || '';
-      this.password = userData.password || '';
+      this.login(userData);
     },
 
     handleRegisterSuccess(userData) {
-      this.isLoggedIn = true;
       this.showRegisterModal = false; 
       console.log('Register successful!'); 
-      this.username = userData.username || '';
-      this.password = userData.password || '';
+      this.login(userData);
     },
 
     handleLogout() {
-      this.username = '';
-      this.password = '';
-      this.isLoggedIn = false;
+      this.logout();
       this.showProfileModal = false; 
       console.log('User logged out!');
     },

@@ -177,8 +177,8 @@ export default {
   
 .text {
   position: absolute;
-  width: 959px;
-  top: 189px;
+  width: 1000px;
+  top: 140px;
   left: 360px;
   font-family: "Inter-Medium", Helvetica;
   font-weight: 500;
@@ -192,7 +192,7 @@ export default {
 .progress-bar {
   position: absolute;
   width: 624px;
-  top: 350px;
+  top: 320px;
   left: 525px;
 }
   

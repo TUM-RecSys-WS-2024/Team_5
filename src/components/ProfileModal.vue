@@ -28,7 +28,7 @@
     <div class="password-wrapper">
       <p class="p">
         <span class="password">Password</span>
-        <span class="star">{{ obfuscatedPassword }}</span>
+        <span class="star">{{ password }}</span>
       </p>
     </div>
    </div>
@@ -58,8 +58,14 @@ export default {
   },
 
   computed: {
-    obfuscatedPassword() {
-      return '*'.repeat(this.password.length || 0);
+    username() {
+      return this.$store.state.username;
+    },
+    password() {
+      if (this.$store.state.password == null || this.$store.state.password == '') {
+        return '';
+      }
+      return '*'.repeat(this.$store.state.password.length || 0);
     },
   },
 
@@ -92,8 +98,8 @@ export default {
     width: 319px;
     height: 323px;
     position: fixed;
-    border-radius: 10px; /* 添加圆角 */
-    padding: 20px; /* 内边距优化布局 */
+    border-radius: 10px;
+    padding: 20px; 
   }
   
 .logout {
@@ -141,10 +147,10 @@ export default {
     left: 25px;
   }
 
-  .uploaded-photo {
-  width: 100%; /* 填充圆形区域 */
-  height: 100%; /* 填充圆形区域 */
-  object-fit: cover; /* 保证图片裁剪并填满圆形区域 */
+.uploaded-photo {
+  width: 100%; 
+  height: 100%; 
+  object-fit: cover;
 }
 
   

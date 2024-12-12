@@ -77,7 +77,6 @@ export default {
     },
 
     onClickReg() {
-      debugger;
       this.$emit('switchPage', 'register');
     }
   }
