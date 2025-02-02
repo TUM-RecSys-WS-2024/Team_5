@@ -19,9 +19,9 @@ return(
           <Route path="/signin" element={<Signin/>}></Route>
           <Route path="/draw" element={<Draw/>}></Route>
           <Route path="/quiz" element={<Quiz/>}></Route>
-          {/* <Route path="/calendar" element={<Calendar/>}></Route> */}
+          <Route path="/calendar" element={<Calendar/>}></Route> 
           <Route path="/recommendations" element={<Recommendations/>}></Route>
-          <Route path="/map" element={<Map/>}></Route>
+          <Route path="/:tourId" element={<Map />} />
           <Route path="/comments" element={<Comments/>}></Route>
         </Routes>
       </BrowserRouter>
