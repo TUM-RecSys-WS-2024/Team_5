@@ -12,9 +12,9 @@ import { Map } from './pages/Map'
 function App() {
 
 return(
-      <BrowserRouter>
+      <BrowserRouter basename="/dashboard">
         <Routes>
-          <Route path="/dashboard" element={<Dashboard/>}></Route>
+          <Route path="/" element={<Dashboard/>}></Route>
           <Route path="/signup" element={<Signup/>}></Route>
           <Route path="/signin" element={<Signin/>}></Route>
           <Route path="/draw" element={<Draw/>}></Route>
