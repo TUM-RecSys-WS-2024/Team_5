@@ -8,5 +8,8 @@ export default defineConfig({
     host: true, // Allow external access
     port: 5173, // Optional: Ensure the port matches your current setup
   },
+  build: {
+    chunkSizeWarningLimit: 1000, // Set the chunk size warning limit to 1000 kB
+  },
 })
 
