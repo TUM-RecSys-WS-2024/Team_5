@@ -1,166 +1,128 @@
 import React from "react";
-import "react-datepicker/dist/react-datepicker.css";
+import { FiMoreHorizontal } from "react-icons/fi";
 
-export const SideBarRecommend = ({ filters, setFilters }) => {
+export const SideBarRecommend = ({ filters, setFilters, filterOptions }) => {
+  const [isFilterOpen, setIsFilterOpen] = React.useState(false);
+  // console.log("sideBarRecommed",filters)
   const handleClearFilters = () => {
+    console.log("Clearing filters");
     setFilters({
-      difficulty: "",
+      difficulties: [],
+      routeTypes: [],
       minRating: 0,
-      duration: "",
-      trekType: "",
-      distance: "",
-      fitnessLevel: "",
-      weather: "",
-      activityType: "",
+      maxDuration: filterOptions?.maxDuration || 0,
+      maxDistance: filterOptions?.maxDistance || 0,
+      maxTimeToReach: filterOptions?.maxTimeToReach || 0,
     });
   };
 
-  return (
-    <div className="w-1/5 bg-gray-100 p-4 shadow-md">
-        <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold">Filters</h2>
-            <button
-                onClick={handleClearFilters}
-                className="text-[#3d7cb3] text-sm underline">
-                Clear All
-            </button>
-        </div>
-
-      {/* Trek Difficulty */}
-      <div className="mb-6">
-        <h3 className="font-medium text-lg mb-2">Trek Difficulty</h3>
-        {["Easy", "Medium", "Hard"].map((level) => (
-          <div key={level} className="flex items-center mb-2">
-            <input
-              type="checkbox"
-              value={level.toLowerCase()}
-              onChange={(e) => {
-                setFilters({ ...filters, difficulty: e.target.value });
-              }}
-              checked={filters.difficulty === level.toLowerCase()}
-            />
-            <label className="ml-2 text-gray-700">{level}</label>
-          </div>
-        ))}
-      </div>
-
-      {/* Minimum Rating */}
-      <div className="mb-6">
-        <h3 className="font-medium text-lg mb-2">Minimum Rating</h3>
-        <div className="flex items-center">
-          <span className="mr-3 text-gray-600 text-sm">{filters.minRating}★</span>
-          <input
-            type="range"
-            min="0"
-            max="5"
-            step="0.1"
-            value={filters.minRating}
-            onChange={(e) =>
-              setFilters({ ...filters, minRating: Number(e.target.value) })
-            }
-            className="w-full h-2 bg-gray-200 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-      </div>
-
-      {/* Duration */}
-      <div className="mb-6">
-        <h3 className="font-medium text-lg mb-2">Duration</h3>
-        {["1-3 hours", "4-6 hours", "Full day"].map((duration) => (
-          <div key={duration} className="flex items-center mb-2">
-            <input
-              type="checkbox"
-              value={duration.toLowerCase()}
-              onChange={(e) => setFilters({ ...filters, duration: e.target.value })}
-              checked={filters.duration === duration.toLowerCase()}
-            />
-            <label className="ml-2 text-gray-700">{duration}</label>
-          </div>
-        ))}
-      </div>
-
-      {/* Type of Trek */}
-      <div className="mb-6">
-        <h3 className="font-medium text-lg mb-2">Type of Trek</h3>
-        {["Nature", "Fort", "Mountain", "Waterfall", "Wildlife"].map((trekType) => (
-          <div key={trekType} className="flex items-center mb-2">
-            <input
-              type="checkbox"
-              value={trekType.toLowerCase()}
-              onChange={(e) => setFilters({ ...filters, trekType: e.target.value })}
-              checked={filters.trekType === trekType.toLowerCase()}
-            />
-            <label className="ml-2 text-gray-700">{trekType}</label>
-          </div>
-        ))}
-      </div>
-
-      {/* Distance */}
-      <div className="mb-6">
-        <h3 className="font-medium text-lg mb-2">Distance</h3>
-        {["5-10 km", "10-20 km", "20+ km"].map((distance) => (
-          <div key={distance} className="flex items-center mb-2">
-            <input
-              type="checkbox"
-              value={distance.toLowerCase()}
-              onChange={(e) => setFilters({ ...filters, distance: e.target.value })}
-              checked={filters.distance === distance.toLowerCase()}
-            />
-            <label className="ml-2 text-gray-700">{distance}</label>
-          </div>
-        ))}
-      </div>
-
-      {/* Fitness Level */}
-      <div className="mb-6">
-        <h3 className="font-medium text-lg mb-2">Fitness Level</h3>
-        {["Beginner", "Intermediate", "Advanced"].map((level) => (
-          <div key={level} className="flex items-center mb-2">
-            <input
-              type="checkbox"
-              value={level.toLowerCase()}
-              onChange={(e) =>
-                setFilters({ ...filters, fitnessLevel: e.target.value })
-              }
-              checked={filters.fitnessLevel === level.toLowerCase()}
-            />
-            <label className="ml-2 text-gray-700">{level}</label>
-          </div>
-        ))}
-      </div>
-
-      {/* Preferred Weather */}
-      <div className="mb-6">
-        <h3 className="font-medium text-lg mb-2">Preferred Weather</h3>
-        {["Cool", "Hot", "Humid", "Cold"].map((weather) => (
-          <div key={weather} className="flex items-center mb-2">
-            <input
-              type="checkbox"
-              value={weather.toLowerCase()}
-              onChange={(e) => setFilters({ ...filters, weather: e.target.value })}
-              checked={filters.weather === weather.toLowerCase()}
-            />
-            <label className="ml-2 text-gray-700">{weather}</label>
-          </div>
-        ))}
-      </div>
-
-      {/* Activity Type */}
-      <div className="mb-6">
-        <h3 className="font-medium text-lg mb-2">Activity Type</h3>
-        {["Trekking", "Hiking", "Camping", "Rock Climbing", "Water Sports"].map(
-          (activity) => (
-            <div key={activity} className="flex items-center mb-2">
+  const renderFilters = () => (
+    <>
+      {/* Route Type Filter */}
+      {filterOptions?.routeTypes?.length > 0 && (
+        <div className="mb-4">
+          <h3 className="font-medium text-lg mt-2 mb-2">Route Type</h3>
+          {filterOptions.routeTypes.map(type => (
+            <div key={type} className="flex items-center mb-2">
               <input
                 type="checkbox"
-                value={activity.toLowerCase()}
-                onChange={(e) => setFilters({ ...filters, activityType: e.target.value })}
-                checked={filters.activityType === activity.toLowerCase()}
+                checked={filters.routeTypes.includes(type)}
+                onChange={(e) => {
+                  const newRouteTypes = e.target.checked
+                    ? [...filters.routeTypes, type]
+                    : filters.routeTypes.filter(t => t !== type);
+                  setFilters(prev => ({...prev, routeTypes: newRouteTypes}));
+                }}
               />
-              <label className="ml-2 text-gray-700">{activity}</label>
+              <label className="ml-2 text-gray-700 capitalize">{type.replace(/-/g, ' ')}</label>
             </div>
-          )
-        )}
+          ))}
+        </div>
+      )}
+
+      {/* Difficulty Filter */}
+      {filterOptions?.difficulties?.length > 0 && (
+        <div className="mb-4">
+          <h3 className="font-medium text-lg mt-2 mb-2">Difficulty</h3>
+          {filterOptions.difficulties.map(level => (
+            <div key={level} className="flex items-center mb-2">
+              <input
+                type="checkbox"
+                checked={filters.difficulties.includes(level)}
+                onChange={(e) => {
+                  const newDifficulties = e.target.checked
+                    ? [...filters.difficulties, level]
+                    : filters.difficulties.filter(d => d !== level);
+                  setFilters(prev => ({...prev, difficulties: newDifficulties}));
+                }}
+              />
+              <label className="ml-2 text-gray-700 capitalize">{level}</label>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Numerical Filters */}
+      {['Duration', 'Distance', 'TimeToReach'].map(filter => {
+        const filterKey = `max${filter}`;
+        const maxValue = filterOptions?.[filterKey] || 0;
+        const currentValue = filters[filterKey];
+        const unit = filter === 'Distance' ? 'km' : 'hours';
+
+        return (
+          <div key={filter} className="mb-4">
+            <h3 className="font-medium text-lg mb-2">
+              Max {filter.replace(/([A-Z])/g, " $1")} ({unit})
+            </h3>
+            <div className="flex items-center">
+              <input
+                type="range"
+                min="0"
+                max={maxValue}
+                value={currentValue}
+                onChange={(e) => 
+                  setFilters(prev => ({
+                    ...prev,
+                    [filterKey]: Number(e.target.value)
+                  }))
+                }
+                className="w-full h-2 bg-gray-200 rounded-lg"
+              />
+              <span className="ml-3 text-gray-600 text-sm">
+                {currentValue}
+                {unit}
+              </span>
+            </div>
+          </div>
+        );
+      })}
+    </>
+  );
+  return (
+    <div className="w-full md:w-1/5 bg-gray-100 p-4 shadow-md">
+      <div className="md:block">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold">Filters</h2>
+          <button
+            onClick={handleClearFilters}
+            className="text-blue-600 text-sm underline"
+          >
+            Clear All
+          </button>
+        </div>
+        <div className="hidden md:block">{renderFilters()}</div>
+      </div>
+
+      {/* Mobile View */}
+      <div className="md:hidden mb-4">
+        <button
+          onClick={() => setIsFilterOpen(!isFilterOpen)}
+          className="flex items-center justify-between w-full py-2 px-4 bg-blue-500 text-white rounded-md"
+        >
+          <span>Filters</span>
+          <FiMoreHorizontal />
+        </button>
+        {isFilterOpen && <div className="mt-2">{renderFilters()}</div>}
       </div>
     </div>
   );

@@ -1,112 +1,189 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { AppBar } from "../components/AppBar";
-import Weather from "../assets/weather.jpg";
+import WeatherImage from "../assets/weather.jpg";
+import axios from 'axios';
+import { BACKEND_URL } from "../../config";
+
+const weatherCodeMap = {
+  0: { label: 'Clear sky', icon: '☀️' },
+  1: { label: 'Mainly clear', icon: '🌤️' },
+  2: { label: 'Partly cloudy', icon: '⛅' },
+  3: { label: 'Overcast', icon: '☁️' },
+  45: { label: 'Foggy', icon: '🌫️' },
+  48: { label: 'Depositing rime fog', icon: '🌫️' },
+  51: { label: 'Light drizzle', icon: '🌧️' },
+  53: { label: 'Moderate drizzle', icon: '🌧️' },
+  55: { label: 'Dense drizzle', icon: '🌧️' },
+  61: { label: 'Slight rain', icon: '🌧️' },
+  63: { label: 'Moderate rain', icon: '🌧️' },
+  65: { label: 'Heavy rain', icon: '🌧️' },
+  71: { label: 'Slight snow', icon: '🌨️' },
+  73: { label: 'Moderate snow', icon: '🌨️' },
+  75: { label: 'Heavy snow', icon: '🌨️' },
+  95: { label: 'Thunderstorm', icon: '⛈️' },
+};
 
 const Calendar = () => {
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const [location, setLocation] = useState(null);
+  const [weatherData, setWeatherData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const getDaysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
+  // Fetch user location
+  useEffect(() => {
+    const fetchLocation = async () => {
+      try {
+        const response = await axios.get(`${BACKEND_URL}/user/location`, {
+          headers: { 
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        setLocation(response.data);
+      } catch (err) {
+        setError('Failed to fetch location');
+        setLoading(false);
+      }
+    };
 
-  const getFirstDayOfMonth = (year, month) => new Date(year, month, 1).getDay();
+    fetchLocation();
+  }, []);
 
-  const year = currentDate.getFullYear();
-  const month = currentDate.getMonth();
-  const firstDay = getFirstDayOfMonth(year, month);
-  const daysInMonth = getDaysInMonth(year, month);
-  const days = Array.from({ length: firstDay }).fill(null).concat(
-    Array.from({ length: daysInMonth }, (_, index) => index + 1)
-  );
+  // Fetch weather when location changes
+  useEffect(() => {
+    const fetchWeather = async () => {
+      if (!location?.lat || !location?.lon) return;
 
-  const previousMonth = () => setCurrentDate(new Date(year, month - 1, 1));
+      try {
+        const response = await axios.get(
+          `https://api.open-meteo.com/v1/forecast`,
+          {
+            params: {
+              latitude: location.lat,
+              longitude: location.lon,
+              daily: 'weather_code,temperature_2m_max,temperature_2m_min',
+              timezone: 'auto',
+              forecast_days: 16
+            }
+          }
+        );
 
-  const nextMonth = () => setCurrentDate(new Date(year, month + 1, 1));
+        setWeatherData(response.data);
+        setError(null);
+      } catch (err) {
+        setError('Failed to fetch weather forecast');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const weatherEmojis = [
-    "☀️", 
-    "☁️", 
-    "🌧️",
-    "❄️", 
-  ];
+    fetchWeather();
+  }, [location]);
 
-  const weatherReport = () => {
-    const weather = weatherEmojis[Math.floor(Math.random() * weatherEmojis.length)];
-    switch (weather) {
-      case "☀️":
-        return "It's going to be sunny this month! Perfect time for outdoor activities.";
-      case "☁️":
-        return "Expect some clouds. A mix of sun and shade, ideal for relaxed days.";
-      case "🌧️":
-        return "Rainy days ahead. Don't forget to carry an umbrella!";
-      case "❄️":
-        return "Cold and snowy weather this month. Great time for cozy indoors and winter sports.";
-      default:
-        return "The weather seems unpredictable. Prepare for anything!";
-    }
+  // Date generation remains the same
+  const startDate = new Date();
+  const generateDays = () => {
+    return Array.from({ length: 16 }, (_, i) => {
+      const date = new Date(startDate);
+      date.setDate(startDate.getDate() + i);
+      return date;
+    });
   };
 
-  return (
-    <div><AppBar/>
-    <div className="relative w-full h-full">
-      <img
-        src={Weather}
-        alt="Weather Background"
-        className="absolute top-0 left-0 w-full h-full z-0 object-cover opacity-70"
-      />
-      <div className="relative z-10 flex flex-col items-center min-h-screen py-4 top-10">
-        <div className="w-full max-w-2xl bg-white shadow-xl rounded-lg overflow-hidden">
-          <div className="text-center py-2 bg-blue-100 text-blue-600 font-semibold text-lg">
-            <h2>Plan your month according to the weather!</h2>
-            <p>{weatherReport()}</p>
-          </div>
+  // Helper to get day weather
+  const getDailyWeather = (index) => {
+    if (!weatherData || !weatherData.daily) return null;
+    
+    const code = weatherData.daily.weather_code[index];
+    const maxTemp = Math.round(weatherData.daily.temperature_2m_max[index]);
+    const minTemp = Math.round(weatherData.daily.temperature_2m_min[index]);
+    
+    return {
+      ...(weatherCodeMap[code] || { label: 'Unknown', icon: '❓' }),
+      maxTemp,
+      minTemp
+    };
+  };
 
-          <div className="flex items-center justify-between bg-blue-600 text-white p-2">
-            <button
-              onClick={previousMonth}
-              className="p-1 rounded-full hover:bg-blue-500"
-            >
-              &lt;
-            </button>
-            <div className="text-sm font-semibold">
-              {new Date(year, month).toLocaleString("default", {
-                month: "long",
-                year: "numeric",
+  if (loading) {
+    return (
+      <div className="text-center p-8">
+        Loading weather data...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center p-8 text-red-500">
+        {error}
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <AppBar />
+      <div className="relative w-full min-h-screen">
+        <img
+          src={WeatherImage}
+          alt="Weather Background"
+          className="absolute top-0 left-0 w-full h-full object-cover opacity-40"
+        />
+        
+        <div className="relative z-10 pt-12 px-4 pb-8">
+          <div className="max-w-3xl mx-auto bg-white/90 backdrop-blur-sm rounded-xl shadow-lg p-4">
+            {/* Calendar Header - remains same */}
+            <div className="mb-4 px-3 py-2 bg-[#232323] text-white rounded-lg text-center">
+              <h2 className="text-lg font-semibold">
+                {startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - 
+                {new Date(startDate.getTime() + 15 * 86400000).toLocaleDateString('en-US', { 
+                  month: 'short', 
+                  day: 'numeric', 
+                  year: 'numeric' 
+                })}
+              </h2>
+              <p className="text-xs mt-1">16-day trek planning calendar</p>
+            </div>
+
+            {/* Updated Calendar Grid with real data */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3">
+              {generateDays().map((date, index) => {
+                const weather = getDailyWeather(index);
+                
+                return (
+                  <div 
+                    key={index}
+                    className="p-3 bg-white border rounded-md hover:shadow-md transition-shadow text-center"
+                  >
+                    <div className="text-xs text-gray-600 font-medium mb-1">
+                      {date.toLocaleDateString('en-US', { weekday: 'short' })}
+                    </div>
+                    <div className="text-sm font-medium mb-2">
+                      {date.toLocaleDateString('en-US', { day: 'numeric' })}
+                      <span className="text-xs ml-1 text-gray-500">
+                        {date.toLocaleDateString('en-US', { month: 'short' })}
+                      </span>
+                    </div>
+                    {weather && (
+                      <>
+                        <div className="text-3xl mb-1" title={weather.label}>
+                          {weather.icon}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {weather.label}
+                        </div>
+                        <div className="text-xs text-gray-400 mt-1">
+                          {weather.maxTemp}°/{weather.minTemp}°
+                        </div>
+                      </>
+                    )}
+                  </div>
+                );
               })}
             </div>
-            <button
-              onClick={nextMonth}
-              className="p-1 rounded-full hover:bg-blue-500"
-            >
-              &gt;
-            </button>
-          </div>
-
-          <div className="grid grid-cols-7 gap-1 p-2">
-            {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-              <div key={day} className="text-center text-xs font-semibold text-gray-600">
-                {day}
-              </div>
-            ))}
-
-            {days.map((day, index) => (
-              <div
-                key={index}
-                className={`text-center py-2 rounded-full cursor-pointer ${
-                  day ? "bg-gray-200 hover:bg-gray-300" : "bg-transparent"
-                }`}
-              >
-                {day || ""}
-
-                {day && (
-                  <div className="flex justify-center items-center mt-1 text-lg">
-                    <span>{weatherEmojis[index % weatherEmojis.length]}</span>
-                  </div>
-                )}
-              </div>
-            ))}
           </div>
         </div>
       </div>
-    </div>
     </div>
   );
 };
